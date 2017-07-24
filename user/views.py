@@ -1,14 +1,12 @@
 # -*- coding:utf-8 -*-
-
-
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 from serializers import UserSerializer
-from serializers import UserDataSerializer
-from models import UserData
-from django.contrib.auth.models import User
+from serializers import DataSerializer
+from models import Data
+from practice.models import Practice
 import json
 
 
@@ -17,37 +15,67 @@ class AccountAPI(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """
+        Creates a new account
+        :param request:
+            {
+                "username": "string",
+                "first_name": "string",
+                "last_name": "string",
+                "password": "string",
+                "email": "string",
+                "user_type": integer,
+                "access_level": integer
+            }
+        :return: {message: string, user: UserSerializer, data: DataSerializer}
+        """
+
         data = json.loads(request.body)
         user = UserSerializer(data=data)
 
         if user.is_valid():
             saved_user = user.save()
 
-            userdata = UserData.objects.create(
-                user=saved_user,
-                is_practice=data.get('is_practice') if data.get('manager') is None or data.get('manager') == '' else False,
-                manager=User.objects.get(id=data.get('manager'))
-            )
+            try:
+                userdata = Data.objects.create(
+                    user=saved_user,
+                    user_type=data.get('user_type'),
+                    access_level=data.get('acess_level')
+                )
 
-            return Response({'user': user.data, 'userdata': UserDataSerializer(userdata).data}, status.HTTP_201_CREATED)
+                return Response({'message': 'User created successfully', 'user': user.data, 'data': DataSerializer(userdata).data}, status.HTTP_201_CREATED)
+            except Exception as e:
+                saved_user.delete()
+                return Response({'message': 'User couldnt be created'})
 
-        return Response({'message': 'User couldnt be created'})
+        return Response({'message': 'User could not be created'})
 
-class UserDataAPI(APIView):
+
+class AddAccountToPractice(APIView):
+
+    permission_classes = [AllowAny]
 
     def post(self, request):
+
+        """
+        Adds an existing account to a practice
+        :param request:
+            {
+                "user_id": integer,
+                "practice_id": integer
+            }
+        :return: {message: string}
+        """
+
         data = json.loads(request.body)
+
         try:
-            userdata = UserData.objects.get(user=request.user)
-            userdata.is_practice=data.get('is_practice')
-            userdata.save()
+            data = Data.objects.get(user__id=data.get('user_id'))
+            data.practice = Practice.objects.get(id='practice_id')
+            data.save()
 
-            serializer = UserDataSerializer(userdata)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except UserData.DoesNotExist:
-            return Response({'message': 'UserData does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception:
-            return Response({'message': 'Error adding UserData info'}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({'message': 'Practice added to account successfully'}, status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'message': 'Practice could not be added'})
 
 

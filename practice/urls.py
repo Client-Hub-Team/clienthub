@@ -2,8 +2,8 @@
 
 # urls.py
 from django.conf.urls import url
-from user.views import AccountAPI
+from practice.views import *
 
 urlpatterns = [
-    url(r'^create$', AccountAPI.as_view()),
+    url(r'^create$', PracticeAPI.as_view()),
 ]

@@ -1,26 +1,17 @@
-from models import UserData
+from models import Data
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
-class UserDataSerializer(serializers.ModelSerializer):
+class DataSerializer(serializers.ModelSerializer):
 
      class Meta:
-        model = UserData
-
+        model = Data
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id','password', 'username', 'email']
         extra_kwargs = {'password': {'write_only': True}, }
-
-
-    @staticmethod
-    def jwt_response_payload_handler(token, user=None, request=None):
-        return {
-            'token': token,
-            'user': UserSerializer(user).data
-        }
 
     # Important note: I changed the validation to user email instead of username, so username is basically
     # useless here. Keep that in mind, ALWAYS.
