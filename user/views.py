@@ -5,8 +5,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework import status
 from serializers import UserSerializer
 from serializers import DataSerializer
-from models import Data
+from models import Data, Invite
 from practice.models import Practice
+from email_helper import Email_Helper
 import json
 
 
@@ -73,6 +74,50 @@ class AddAccountToPractice(APIView):
             data = Data.objects.get(user__id=data.get('user_id'))
             data.practice = Practice.objects.get(id='practice_id')
             data.save()
+
+            return Response({'message': 'Practice added to account successfully'}, status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'message': 'Practice could not be added'})
+
+
+class InviteClient(APIView):
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+
+        """
+        Invites an user to your CloudClientHub company
+        by sending an email to them
+        :param request:
+            {
+                "name": string,
+                "email": string,
+                "type": integer,
+                "client_id": integer,
+                "accountant_id": integer
+            }
+        :return: {message: string}
+        """
+
+        data = json.loads(request.body)
+
+        try:
+            invite = Invite.objects.create(
+                email=data.get('email'),
+                name=data.get('name'),
+                accountant_id=data.get('accountant_id', None),
+                client_id=data.get('client_id', None),
+                type=data.get('type')
+            )
+
+            Email_Helper.send(
+                to=invite.email,
+                subject='Welcome to Client Hub',
+                html=None,
+                text=None,
+                message_from='welcome@clienthub.com'
+            )
 
             return Response({'message': 'Practice added to account successfully'}, status.HTTP_200_OK)
         except Exception as e:

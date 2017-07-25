@@ -9,3 +9,4 @@ class Practice(models.Model):
     logo = models.TextField(max_length=250, null=True, blank=True)
     url = models.CharField(max_length=250, null=True, blank=True)
     twitter = models.CharField(max_length=250, null=True, blank=True)
+    is_accounting = models.BooleanField(default=False)
