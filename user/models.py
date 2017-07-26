@@ -31,20 +31,11 @@ class Data(models.Model):
 
 class Invite(models.Model):
 
-    COMPANY_CREATE = 1
-    COMPANY_JOIN = 2
-
-    TYPE_CHOICES = (
-        (COMPANY_CREATE, 'Create Company'),
-        (COMPANY_JOIN, 'Join Company')
-    )
-
-    accountant = models.ForeignKey(User, db_index=True, related_name="invite_accountant", null=True)
-    client = models.ForeignKey(User, db_index=True, related_name="invite_client", null=True)
+    invited_by = models.ForeignKey(User, db_index=True, related_name="invited_by", null=True)
     name = models.CharField(max_length=250, null=False, blank=False)
     email = models.CharField(max_length=250, null=True, blank=True)
     created = models.DateTimeField(auto_now=True)
-    type = models.IntegerField(choices=TYPE_CHOICES, default=COMPANY_JOIN, null=False)
+    type = models.IntegerField(choices=Data.USERTYPE_CHOICES, default=Data.ACCOUNTANT, null=False)
 
 
 

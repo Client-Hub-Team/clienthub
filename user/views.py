@@ -94,8 +94,7 @@ class InviteClient(APIView):
                 "name": string,
                 "email": string,
                 "type": integer,
-                "client_id": integer,
-                "accountant_id": integer
+                "invited_by": integer,
             }
         :return: {message: string}
         """
@@ -106,21 +105,20 @@ class InviteClient(APIView):
             invite = Invite.objects.create(
                 email=data.get('email'),
                 name=data.get('name'),
-                accountant_id=data.get('accountant_id', None),
-                client_id=data.get('client_id', None),
+                invited_by_id=data.get('invited_by', None),
                 type=data.get('type')
             )
 
             Email_Helper.send(
                 to=invite.email,
                 subject='Welcome to Client Hub',
-                html=None,
+                html='<html><head></head><body>Testing</body></html>',
                 text=None,
                 message_from='welcome@clienthub.com'
             )
 
-            return Response({'message': 'Practice added to account successfully'}, status.HTTP_200_OK)
+            return Response({'message': 'User invited successfully'}, status.HTTP_200_OK)
         except Exception as e:
-            return Response({'message': 'Practice could not be added'})
+            return Response({'message': 'Invite not sent'})
 
 

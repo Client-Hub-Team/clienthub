@@ -10,3 +10,4 @@ class Practice(models.Model):
     url = models.CharField(max_length=250, null=True, blank=True)
     twitter = models.CharField(max_length=250, null=True, blank=True)
     is_accounting = models.BooleanField(default=False)
+    owner = models.ForeignKey(User, null=False, blank=False)
