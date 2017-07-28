@@ -25,7 +25,7 @@ class Data(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     practice = models.ForeignKey(Practice, null=True, blank=True)
     user_type = models.IntegerField(choices=USERTYPE_CHOICES, default=ACCOUNTANT, null=False)
-    access_level = models.IntegerField(choices=USERLEVEL_CHOICES, default=REGULAR, null=True)
+    access_level = models.IntegerField(choices=USERLEVEL_CHOICES, default=REGULAR, null=False)
     created = models.DateTimeField(auto_now=True)
 
 

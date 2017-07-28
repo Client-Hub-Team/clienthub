@@ -10,7 +10,7 @@ class DataSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id','password', 'username', 'email']
+        fields = ['id','password', 'username', 'email', 'first_name', 'last_name']
         extra_kwargs = {'password': {'write_only': True}, }
 
     # Important note: I changed the validation to user email instead of username, so username is basically
@@ -20,11 +20,15 @@ class UserSerializer(serializers.ModelSerializer):
         username = data.get("email")
         password = data.get("password")
         email = data.get("email")
+        first_name = data.get("first_name")
+        last_name = data.get("last_name")
 
         internal_value.update({
             "username": username,
             "password": password,
-            "email": email
+            "email": email,
+            "first_name": first_name,
+            "last_name": last_name
         })
         return internal_value
 
@@ -32,6 +36,8 @@ class UserSerializer(serializers.ModelSerializer):
         user = User.objects.create(
             username=validated_data['username'],
             email=validated_data['email'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name']
         )
         user.set_password(validated_data['password'])
         user.save()

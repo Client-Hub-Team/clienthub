@@ -41,13 +41,13 @@ class AccountAPI(APIView):
                 userdata = Data.objects.create(
                     user=saved_user,
                     user_type=data.get('user_type'),
-                    access_level=data.get('acess_level')
+                    access_level=data.get('access_level')
                 )
 
                 return Response({'message': 'User created successfully', 'user': user.data, 'data': DataSerializer(userdata).data}, status.HTTP_201_CREATED)
             except Exception as e:
                 saved_user.delete()
-                return Response({'message': 'User couldnt be created'})
+                return Response({'message': 'User couldnt be created'}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({'message': 'User could not be created'})
 
