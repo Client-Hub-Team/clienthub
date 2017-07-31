@@ -1,4 +1,4 @@
-from models import Data
+from models import Data, Invite
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
@@ -6,6 +6,13 @@ class DataSerializer(serializers.ModelSerializer):
 
      class Meta:
         model = Data
+
+
+class InviteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Invite
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

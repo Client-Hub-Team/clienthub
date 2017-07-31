@@ -3,9 +3,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework import status
-from serializers import UserSerializer
-from serializers import DataSerializer
-from models import Data, Invite
+from serializers import UserSerializer, DataSerializer, InviteSerializer
+from models import Data, Invite, ClientManagement
 from practice.models import Practice
 from email_helper import Email_Helper
 import json
@@ -41,7 +40,8 @@ class AccountAPI(APIView):
                 userdata = Data.objects.create(
                     user=saved_user,
                     user_type=data.get('user_type'),
-                    access_level=data.get('access_level')
+                    access_level=data.get('access_level'),
+                    practice_id=data.get('practice_id')
                 )
 
                 return Response({'message': 'User created successfully', 'user': user.data, 'data': DataSerializer(userdata).data}, status.HTTP_201_CREATED)
@@ -52,18 +52,20 @@ class AccountAPI(APIView):
         return Response({'message': 'User could not be created'})
 
 
-class AddAccountToPractice(APIView):
+class JoinPractice(APIView):
 
     permission_classes = [AllowAny]
 
     def post(self, request):
 
         """
-        Adds an existing account to a practice
+        Adds an existing account to a practice, as an Accountant or Client / Admin or Regular
         :param request:
             {
                 "user_id": integer,
-                "practice_id": integer
+                "practice_id": integer,
+                "user_type": integer,
+                "access_level": integer
             }
         :return: {message: string}
         """
@@ -73,11 +75,43 @@ class AddAccountToPractice(APIView):
         try:
             data = Data.objects.get(user__id=data.get('user_id'))
             data.practice = Practice.objects.get(id='practice_id')
+            data.access_level = data.get('access_level', data.access_level)
+            data.user_type = data.get('user_type', data.user_type)
             data.save()
 
-            return Response({'message': 'Practice added to account successfully'}, status.HTTP_200_OK)
+            return Response({'message': 'Account successfully joined company'}, status.HTTP_200_OK)
         except Exception as e:
-            return Response({'message': 'Practice could not be added'})
+            return Response({'message': 'Account couldnt join company'})
+
+
+
+class AddClientToAccountant(APIView):
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+
+        """
+        Adds an existing client to a accountant
+        :param request:
+            {
+                "accountant_id": integer,
+                "client_id": integer
+            }
+        :return: {message: string}
+        """
+
+        data = json.loads(request.body)
+
+        try:
+            data_accountant = Data.objects.get(user_id=data.get('accountant_id'))
+            data_client = Data.objects.get(user_id=data.get('client_id'))
+
+            management = ClientManagement.objects.create(accountant=data_accountant, client=data_client)
+
+            return Response({'message': 'Accountant is now managing user'}, status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'message': 'Accountant couldnt manage user'})
 
 
 class InviteClient(APIView):
@@ -118,6 +152,31 @@ class InviteClient(APIView):
             )
 
             return Response({'message': 'User invited successfully'}, status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'message': 'Invite not sent'})
+
+
+class CheckInvitation(APIView):
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+
+        """
+        Check what invitations an email has
+        :param request:
+            {
+                "email": string,
+            }
+        :return: {invites: []}
+        """
+
+        data = json.loads(request.body)
+
+        try:
+            invites = Invite.objects.filter(email=data.get('email'))
+
+            return Response({'invites': InviteSerializer(invites).data}, status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': 'Invite not sent'})
 

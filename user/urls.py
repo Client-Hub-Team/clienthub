@@ -7,4 +7,5 @@ from user.views import *
 urlpatterns = [
     url(r'^create$', AccountAPI.as_view()),
     url(r'^invite$', InviteClient.as_view()),
+    url(r'^accountant.client.add', AddClientToAccountant.as_view())
 ]

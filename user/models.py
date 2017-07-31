@@ -27,6 +27,7 @@ class Data(models.Model):
     user_type = models.IntegerField(choices=USERTYPE_CHOICES, default=ACCOUNTANT, null=False)
     access_level = models.IntegerField(choices=USERLEVEL_CHOICES, default=REGULAR, null=False)
     created = models.DateTimeField(auto_now=True)
+    clients = models.ManyToManyField('Data', through='ClientManagement')
 
 
 class Invite(models.Model):
@@ -36,6 +37,11 @@ class Invite(models.Model):
     email = models.CharField(max_length=250, null=True, blank=True)
     created = models.DateTimeField(auto_now=True)
     type = models.IntegerField(choices=Data.USERTYPE_CHOICES, default=Data.ACCOUNTANT, null=False)
+
+
+class ClientManagement(models.Model):
+    accountant = models.ForeignKey(Data, related_name='accountant')
+    client = models.ForeignKey(Data, related_name='client')
 
 
 
