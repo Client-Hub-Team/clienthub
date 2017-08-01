@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework import status
 from serializers import UserSerializer, DataSerializer, InviteSerializer
 from models import Data, Invite, ClientManagement
-from practice.models import Practice
+from company.models import Company
 from email_helper import Email_Helper
 import json
 
@@ -25,7 +25,8 @@ class AccountAPI(APIView):
                 "password": "string",
                 "email": "string",
                 "user_type": integer,
-                "access_level": integer
+                "access_level": integer,
+                "company_id": integer
             }
         :return: {message: string, user: UserSerializer, data: DataSerializer}
         """
@@ -41,7 +42,7 @@ class AccountAPI(APIView):
                     user=saved_user,
                     user_type=data.get('user_type'),
                     access_level=data.get('access_level'),
-                    practice_id=data.get('practice_id')
+                    company_id=data.get('company_id')
                 )
 
                 return Response({'message': 'User created successfully', 'user': user.data, 'data': DataSerializer(userdata).data}, status.HTTP_201_CREATED)
@@ -52,18 +53,18 @@ class AccountAPI(APIView):
         return Response({'message': 'User could not be created'})
 
 
-class JoinPractice(APIView):
+class JoinCompany(APIView):
 
     permission_classes = [AllowAny]
 
     def post(self, request):
 
         """
-        Adds an existing account to a practice, as an Accountant or Client / Admin or Regular
+        Adds an existing account to a company, as an Accountant or Client / Admin or Regular
         :param request:
             {
                 "user_id": integer,
-                "practice_id": integer,
+                "company_id": integer,
                 "user_type": integer,
                 "access_level": integer
             }
@@ -74,7 +75,7 @@ class JoinPractice(APIView):
 
         try:
             data = Data.objects.get(user__id=data.get('user_id'))
-            data.practice = Practice.objects.get(id='practice_id')
+            data.company = Company.objects.get(id='company_id')
             data.access_level = data.get('access_level', data.access_level)
             data.user_type = data.get('user_type', data.user_type)
             data.save()
@@ -107,11 +108,16 @@ class AddClientToAccountant(APIView):
             data_accountant = Data.objects.get(user_id=data.get('accountant_id'))
             data_client = Data.objects.get(user_id=data.get('client_id'))
 
-            management = ClientManagement.objects.create(accountant=data_accountant, client=data_client)
+            if data_client.user_type == Data.CLIENT and \
+               data_accountant.user_type == Data.ACCOUNTANT and \
+               data_accountant.access_level == Data.ADMIN:
+                management = ClientManagement.objects.create(accountant=data_accountant, client=data_client)
+            else:
+                return Response({'message': 'Cannot add Accountant as a Client'}, status.HTTP_400_BAD_REQUEST)
 
             return Response({'message': 'Accountant is now managing user'}, status.HTTP_200_OK)
         except Exception as e:
-            return Response({'message': 'Accountant couldnt manage user'})
+            return Response({'message': 'Accountant couldnt manage user'}, status.HTTP_400_BAD_REQUEST)
 
 
 class InviteClient(APIView):
@@ -179,5 +185,7 @@ class CheckInvitation(APIView):
             return Response({'invites': InviteSerializer(invites).data}, status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': 'Invite not sent'})
+
+
 
 

@@ -2,12 +2,6 @@ from models import Data, Invite
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
-class DataSerializer(serializers.ModelSerializer):
-
-     class Meta:
-        model = Data
-
-
 class InviteSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -56,4 +50,15 @@ class UserSerializer(serializers.ModelSerializer):
             password = validated_data.pop('password')
             instance.set_password(password)
             return super(UserSerializer, self).update(instance, validated_data)
+
+
+class DataSerializer(serializers.ModelSerializer):
+
+    user = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Data
+
+    def get_user(self, obj):
+        return UserSerializer(obj.user).data
 

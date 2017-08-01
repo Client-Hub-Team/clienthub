@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.contrib.auth.models import User
 
-class Practice(models.Model):
+class Company(models.Model):
 
     name = models.CharField(max_length=250, null=False, blank=False)
     logo = models.TextField(max_length=250, null=True, blank=True)
@@ -11,3 +11,4 @@ class Practice(models.Model):
     twitter = models.CharField(max_length=250, null=True, blank=True)
     is_accounting = models.BooleanField(default=False)
     owner = models.ForeignKey(User, null=False, blank=False)
+    accounting_company = models.ForeignKey("Company", null=True, blank=True)
