@@ -42,6 +42,7 @@ class Invite(models.Model):
 class ClientManagement(models.Model):
     accountant = models.ForeignKey(Data, related_name='accountant')
     client = models.ForeignKey(Data, related_name='client')
+    created = models.DateTimeField(auto_now=True)
 
 
 

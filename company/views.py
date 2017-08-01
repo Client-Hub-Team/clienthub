@@ -24,7 +24,8 @@ class CompanyAPI(APIView):
                 "logo": "string",
                 "twitter": "string",
                 "is_accounting": "boolean,
-                "owner": integer
+                "owner": integer,
+                "accounting_company": integer
             }
         :return: {message: string, Company: CompanySerializer}
         """
@@ -38,6 +39,7 @@ class CompanyAPI(APIView):
                 twitter=data.get('twitter'),
                 is_accounting=data.get('is_accounting', False),
                 owner_id=data.get('owner'),
+                accounting_company_id=data.get('accounting_company', None)
             )
             data = Data.objects.get(user=request.user)
             data.company = company
