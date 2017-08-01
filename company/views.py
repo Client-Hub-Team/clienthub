@@ -50,6 +50,31 @@ class CompanyAPI(APIView):
             return Response({'message': 'Error adding new Company'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class AddAccountingCompanyToCompanyAPI(APIView):
+
+    def post(self, request):
+
+        """
+        Creates a new Company
+        :param request:
+            {
+                "company": integer,
+                "accounting_company": integer
+            }
+        :return: {message: string, Company: CompanySerializer}
+        """
+        data = json.loads(request.body)
+
+        try:
+            company = Company.objects.get(id=data.get('company'))
+            company.accounting_company = Company.objects.get(id=data.get('accounting_company'))
+            company.save()
+
+            return Response({'company': CompanySerializer(company).data}, status=status.HTTP_201_CREATED)
+        except Exception:
+            return Response({'message': 'Error adding new Company'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class CompanyClientsAPI(APIView):
 
     def get(self, request):
