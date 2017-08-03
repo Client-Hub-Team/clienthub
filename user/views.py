@@ -7,6 +7,7 @@ from serializers import UserSerializer, DataSerializer, InviteSerializer
 from models import Data, Invite, ClientManagement
 from company.models import Company
 from email_helper import Email_Helper
+from decorators import is_accountant
 import json
 
 
@@ -88,8 +89,8 @@ class JoinCompany(APIView):
 
 class AddClientToAccountant(APIView):
 
-    permission_classes = [AllowAny]
 
+    @is_accountant
     def post(self, request):
 
         """
@@ -122,19 +123,16 @@ class AddClientToAccountant(APIView):
 
 class InviteClient(APIView):
 
-    permission_classes = [AllowAny]
-
     def post(self, request):
 
         """
-        Invites an user to your CloudClientHub company
+        Invites an user to a company
         by sending an email to them
         :param request:
             {
                 "name": string,
                 "email": string,
                 "type": integer,
-                "invited_by": integer,
             }
         :return: {message: string}
         """
@@ -145,7 +143,8 @@ class InviteClient(APIView):
             invite = Invite.objects.create(
                 email=data.get('email'),
                 name=data.get('name'),
-                invited_by_id=data.get('invited_by', None),
+                invited_by=request.user,
+                invited_to=request.user.company,
                 type=data.get('type')
             )
 
@@ -157,9 +156,9 @@ class InviteClient(APIView):
                 message_from='welcome@clienthub.com'
             )
 
-            return Response({'message': 'User invited successfully'}, status.HTTP_200_OK)
+            return Response({'message': 'User invited successfully'}, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({'message': 'Invite not sent'})
+            return Response({'message': 'Invite not sent'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CheckInvitation(APIView):
@@ -182,9 +181,32 @@ class CheckInvitation(APIView):
         try:
             invites = Invite.objects.filter(email=data.get('email'))
 
-            return Response({'invites': InviteSerializer(invites).data}, status.HTTP_200_OK)
+            return Response({'invites': InviteSerializer(invites).data}, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({'message': 'Invite not sent'})
+            return Response({'message': 'You dont have any invites'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AccountantClientsAPI(APIView):
+
+    @is_accountant
+    def get(self, request):
+        """
+        Returns all accountant clients
+        :return: {DataSerializer}
+        """
+        if request.user.data.access_level == Data.ADMIN and request.user.data.user_type == Data.ACCOUNTANT:
+            clients = Data.objects.filter(
+                company__accounting_company=request.user.data.company,
+                user_type=Data.CLIENT
+            )
+        else:
+            clients = Data.objects.filter(
+                user_id__in=ClientManagement.objects.filter(
+                    accountant=request.user.data).values_list('client_id', flat=True),
+                company=request.user.data.company, user_type=Data.CLIENT
+            )
+        return Response(DataSerializer(clients, many=True).data, status=status.HTTP_200_OK)
+
 
 
 

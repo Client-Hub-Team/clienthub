@@ -17,7 +17,7 @@ class Data(models.Model):
     REGULAR = 2
 
 
-    USERLEVEL_CHOICES = (
+    ACCESSLEVEL_CHOICES = (
         (REGULAR, 'Regular'),
         (ADMIN, 'Admin'),
     )
@@ -25,9 +25,9 @@ class Data(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     company = models.ForeignKey(Company, null=True, blank=True)
     user_type = models.IntegerField(choices=USERTYPE_CHOICES, default=ACCOUNTANT, null=False)
-    access_level = models.IntegerField(choices=USERLEVEL_CHOICES, default=REGULAR, null=False)
+    access_level = models.IntegerField(choices=ACCESSLEVEL_CHOICES, default=REGULAR, null=False)
     created = models.DateTimeField(auto_now=True)
-    clients = models.ManyToManyField('Data', through='ClientManagement')
+    # clients = models.ManyToManyField('Data', through='ClientManagement')
 
 
 class Invite(models.Model):
@@ -36,6 +36,7 @@ class Invite(models.Model):
     name = models.CharField(max_length=250, null=False, blank=False)
     email = models.CharField(max_length=250, null=True, blank=True)
     created = models.DateTimeField(auto_now=True)
+    invited_to = models.ForeignKey(Company)
     type = models.IntegerField(choices=Data.USERTYPE_CHOICES, default=Data.ACCOUNTANT, null=False)
 
 

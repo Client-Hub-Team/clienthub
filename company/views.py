@@ -77,14 +77,13 @@ class AddAccountingCompanyToCompanyAPI(APIView):
 
 class CompanyClientsAPI(APIView):
 
-    def get(self, request):
+    def get(self, request, company_id):
         """
-        Returns all Clients from a Company base on access levels
-        :param company_id:
+        Returns all Company clients
         :return: {DataSerializer}
         """
         if request.user.data.access_level == Data.ADMIN:
-            clients = Data.objects.filter(company=request.user.data.company, user_type=Data.CLIENT)
+            clients = Data.objects.filter(company=company_id, company__accounting_company=request.user.data.company, user_type=Data.CLIENT)
         else:
             clients = Data.objects.filter(
                 user_id__in=ClientManagement.objects.filter(

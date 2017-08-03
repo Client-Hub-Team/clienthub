@@ -6,5 +6,5 @@ from company.views import *
 
 urlpatterns = [
     url(r'^create$', CompanyAPI.as_view()),
-    url(r'^clients$', CompanyClientsAPI.as_view()),
+    url(r'^(?P<company_id>[^/]+)/clients$', CompanyClientsAPI.as_view()),
 ]
