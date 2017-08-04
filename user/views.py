@@ -111,10 +111,18 @@ class AddClientToAccountant(APIView):
 
             if data_client.user_type == Data.CLIENT and \
                data_accountant.user_type == Data.ACCOUNTANT and \
-               data_accountant.access_level == Data.ADMIN:
+               request.user.data.access_level == Data.ADMIN:
                 management = ClientManagement.objects.create(accountant=data_accountant, client=data_client)
             else:
-                return Response({'message': 'Cannot add Accountant as a Client'}, status.HTTP_400_BAD_REQUEST)
+                errors = []
+                if data_client.user_type != Data.CLIENT:
+                    errors.append('Client is not CLIENT')
+                if data_accountant.user_type != Data.ACCOUNTANT:
+                    errors.append('Accountant is not ACCOUNTANT')
+                if request.user.data.access_level != Data.ADMIN:
+                    errors.append('Accountant is not an ADMIN')
+
+                return Response({'message': 'Cannot add client to Accountant', 'errors': errors}, status.HTTP_400_BAD_REQUEST)
 
             return Response({'message': 'Accountant is now managing user'}, status.HTTP_200_OK)
         except Exception as e:
@@ -140,21 +148,34 @@ class InviteClient(APIView):
         data = json.loads(request.body)
 
         try:
+            invited_to = data.get('invited_to', None)
+
+            # If type == ACCOUNTANT, Company cannot be None
+            if data.get('type') == 1 and request.user.data.user_type == Data.ACCOUNTANT:
+                invited_to = request.user.data.company_id
+
+            # If the user inviting someone is a CLIENT, they can only invite people to their company
+            if request.user.data.user_type == Data.CLIENT:
+                invited_to = request.user.data.company.id
+                # If the inviting user is a CLIENT, ADMIN permission is required to invite someone to join
+                if request.user.data.access_level != Data.ADMIN:
+                    return Response({'message': 'Wrong request.'}, status=status.HTTP_400_BAD_REQUEST)
+
             invite = Invite.objects.create(
                 email=data.get('email'),
                 name=data.get('name'),
                 invited_by=request.user,
-                invited_to=request.user.company,
+                invited_to_id=invited_to,
                 type=data.get('type')
             )
 
-            Email_Helper.send(
-                to=invite.email,
-                subject='Welcome to Client Hub',
-                html='<html><head></head><body>Testing</body></html>',
-                text=None,
-                message_from='welcome@clienthub.com'
-            )
+            # Email_Helper.send(
+            #     to=invite.email,
+            #     subject='Welcome to Client Hub',
+            #     html='<html><head></head><body>Testing</body></html>',
+            #     text=None,
+            #     message_from='welcome@clienthub.com'
+            # )
 
             return Response({'message': 'User invited successfully'}, status=status.HTTP_200_OK)
         except Exception as e:
@@ -181,9 +202,9 @@ class CheckInvitation(APIView):
         try:
             invites = Invite.objects.filter(email=data.get('email'))
 
-            return Response({'invites': InviteSerializer(invites).data}, status=status.HTTP_200_OK)
+            return Response({'invites': InviteSerializer(invites, many=True).data}, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({'message': 'You dont have any invites'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'You dont have any invites', 'invites': []}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AccountantClientsAPI(APIView):
@@ -201,9 +222,9 @@ class AccountantClientsAPI(APIView):
             )
         else:
             clients = Data.objects.filter(
-                user_id__in=ClientManagement.objects.filter(
-                    accountant=request.user.data).values_list('client_id', flat=True),
-                company=request.user.data.company, user_type=Data.CLIENT
+                        id__in=ClientManagement.objects.filter(accountant=request.user.data)
+                            .values_list('client_id', flat=True),
+                        company__accounting_company=request.user.data.company, user_type=Data.CLIENT
             )
         return Response(DataSerializer(clients, many=True).data, status=status.HTTP_200_OK)
 

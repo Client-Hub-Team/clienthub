@@ -4,11 +4,6 @@ from company.models import Company
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
-class InviteSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Invite
-
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -69,6 +64,22 @@ class DataSerializer(serializers.ModelSerializer):
         if obj.user_type == Data.CLIENT:
             return None
         return None
+
+
+class InviteSerializer(serializers.ModelSerializer):
+    invited_by = serializers.SerializerMethodField()
+    invited_to = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Invite
+
+    def get_invited_by(self, obj):
+        return UserSerializer(obj.invited_by).data
+
+    def get_invited_to(self, obj):
+        if obj.invited_to is None:
+            return None
+        return CompanySerializer(obj.invited_to).data
 
 
 

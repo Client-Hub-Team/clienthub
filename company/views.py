@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework import status
 from user.serializers import DataSerializer
 from company.serializers import CompanySerializer
-from user.models import Data, ClientManagement
+from user.models import Data, ClientManagement, Invite
 from models import Company
 import json
 
@@ -25,13 +25,21 @@ class CompanyAPI(APIView):
                 "twitter": "string",
                 "is_accounting": "boolean,
                 "owner": integer,
-                "accounting_company": integer
+                "accounting_company": integer (optional),
+                "invite_id": integer (optional)
             }
         :return: {message: string, Company: CompanySerializer}
         """
         data = json.loads(request.body)
 
         try:
+
+            data_obj = None
+
+            if data.get('invite_id', None):
+                invite = Invite.objects.get(id=data.get('invite_id'))
+                data_obj = Data.objects.get(user_id=invite.invited_by.id)
+
             company = Company.objects.create(
                 name=data.get('name'),
                 url=data.get('url'),
@@ -39,7 +47,7 @@ class CompanyAPI(APIView):
                 twitter=data.get('twitter'),
                 is_accounting=data.get('is_accounting', False),
                 owner_id=data.get('owner'),
-                accounting_company_id=data.get('accounting_company', None)
+                accounting_company_id=data_obj.company.id if data_obj is not None else None
             )
             data = Data.objects.get(user=request.user)
             data.company = company
@@ -86,7 +94,7 @@ class CompanyClientsAPI(APIView):
             clients = Data.objects.filter(company=company_id, company__accounting_company=request.user.data.company, user_type=Data.CLIENT)
         else:
             clients = Data.objects.filter(
-                user_id__in=ClientManagement.objects.filter(
+                id__in=ClientManagement.objects.filter(
                     accountant=request.user.data).values_list('client_id', flat=True),
                 company=request.user.data.company, user_type=Data.CLIENT
             )
