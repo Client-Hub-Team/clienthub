@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'user',
     'company',
+    'apps',
     'gunicorn',
 ]
 

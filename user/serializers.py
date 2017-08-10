@@ -3,6 +3,8 @@ from company.serializers import CompanySerializer
 from company.models import Company
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from apps.models import App, UserHasApp
+from apps.serializers import AppSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -47,6 +49,29 @@ class UserSerializer(serializers.ModelSerializer):
             password = validated_data.pop('password')
             instance.set_password(password)
             return super(UserSerializer, self).update(instance, validated_data)
+
+
+class DataSimpleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Data
+
+
+class AccountantClientSerializer(serializers.ModelSerializer):
+
+    data = serializers.SerializerMethodField()
+    apps = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+
+    def get_data(self, obj):
+        data = Data.objects.get(user=obj)
+        return DataSimpleSerializer(data).data
+
+    def get_apps(self, obj):
+        apps = App.objects.filter(userhasapp__user=obj)
+        return AppSerializer(apps, many=True).data
 
 
 class DataSerializer(serializers.ModelSerializer):

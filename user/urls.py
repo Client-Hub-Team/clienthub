@@ -9,5 +9,7 @@ urlpatterns = [
     url(r'^invite$', InviteClient.as_view()),
     url(r'^invite.check$', CheckInvitation.as_view()),
     url(r'^accountant.client.add', AddClientToAccountant.as_view()),
-    url(r'^accountant.client.list', AccountantClientsAPI.as_view())
+    url(r'^accountant.client.list', AccountantClientsAPI.as_view()),
+    url(r'^(?P<user_id>[^/]+)$', ClientInfoAPI.as_view()),
+    url(r'^(?P<user_id>[^/]+)/apps$', ClientAppsAPI.as_view()),
 ]

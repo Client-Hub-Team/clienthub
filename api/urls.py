@@ -16,10 +16,12 @@ Including another URLconf
 from django.conf.urls import url, include
 from user import urls as user_urls
 from company import urls as company_urls
+from apps import urls as app_urls
 from rest_framework_jwt.views import obtain_jwt_token
 
 urlpatterns = [
     url(r'^api-token-auth/', obtain_jwt_token),
     url(r'^user/', include(user_urls)),
     url(r'^company/', include(company_urls)),
+    url(r'^apps/', include(app_urls)),
 ]

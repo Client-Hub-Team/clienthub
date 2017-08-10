@@ -3,11 +3,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework import status
-from serializers import UserSerializer, DataSerializer, InviteSerializer
+from serializers import UserSerializer, DataSerializer, InviteSerializer, AccountantClientSerializer
 from models import Data, Invite, ClientManagement
 from company.models import Company
+from apps.serializers import AppSerializer
+from apps.models import App, UserHasApp
 from email_helper import Email_Helper
+from django.contrib.auth.models import User
 from decorators import is_accountant
+from django.db.models import Max
 import json
 
 
@@ -227,6 +231,72 @@ class AccountantClientsAPI(APIView):
                         company__accounting_company=request.user.data.company, user_type=Data.CLIENT
             )
         return Response(DataSerializer(clients, many=True).data, status=status.HTTP_200_OK)
+
+
+
+
+class ClientAppsAPI(APIView):
+
+    @is_accountant
+    def get(self, request, user_id):
+        """
+        Get all client apps
+        :return: {message: string, apps: AppSerializer}
+        """
+        try:
+
+
+            client_apps = AppSerializer(App.objects.filter(
+                id__in=UserHasApp.objects.filter(user_id=user_id).values_list('id', flat=True)), many=True
+            ).data
+
+            return Response({'apps': client_apps}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'message': 'Error retrieving apps'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @is_accountant
+    def post(self, request, user_id):
+        """
+        Add an App to a Client
+        :param request:
+            {
+                "app_id": integer,
+            }
+        :return: {invites: []}
+        """
+
+        data = json.loads(request.body)
+
+        try:
+            last_order = UserHasApp.objects.filter(user_id=user_id).aggregate(Max('order')).get('order__max')
+            user_app = UserHasApp.objects.create(
+                user_id=user_id,
+                app_id=data.get('app_id'),
+                order=last_order+1 if last_order else 0
+            )
+
+            return Response({'message': 'App added successfully'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'message': 'Error retrieving apps'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ClientInfoAPI(APIView):
+
+    @is_accountant
+    def get(self, request, user_id):
+
+        """
+        Get client info for accountant view
+        :return: {message: string, client: ClientSerializer}
+        """
+
+        try:
+            user = User.objects.get(id=user_id)
+            user_serialized = AccountantClientSerializer(user).data
+
+            return Response({'client': user_serialized}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'message': 'Error retrieving apps'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
