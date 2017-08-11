@@ -57,7 +57,7 @@ class AppsAPI(APIView):
 
             if request.user.data.user_type == Data.CLIENT:
                 client_apps = AppSerializer(App.objects.filter(
-                    id__in=UserHasApp.objects.filter(user=request.user).values_list('id', flat=True)), many=True
+                    id__in=UserHasApp.objects.filter(user=request.user).values_list('app_id', flat=True)), many=True
                 ).data
 
             return Response({'all_apps': all_apps, 'client_apps': client_apps}, status=status.HTTP_200_OK)
