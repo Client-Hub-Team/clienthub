@@ -279,6 +279,26 @@ class ClientAppsAPI(APIView):
         except Exception as e:
             return Response({'message': 'Error retrieving apps'}, status=status.HTTP_400_BAD_REQUEST)
 
+    @is_accountant
+    def patch(self, request, user_id):
+        """
+        Remove an App of a Client
+        :param request:
+            {
+                "app_id": integer,
+            }
+        :return: {invites: []}
+        """
+
+        data = json.loads(request.body)
+
+        try:
+            user_app = UserHasApp.objects.get(user_id=user_id, app_id=data.get('app_id'))
+            user_app.delete()
+            return Response({'message': 'App removed successfully'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'message': 'Error retrieving apps'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ClientInfoAPI(APIView):
 
