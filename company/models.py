@@ -10,5 +10,5 @@ class Company(models.Model):
     url = models.CharField(max_length=250, null=True, blank=True)
     twitter = models.CharField(max_length=250, null=True, blank=True)
     is_accounting = models.BooleanField(default=False)
-    owner = models.ForeignKey(User, null=False, blank=False)
+    owner = models.ForeignKey(User, null=True, blank=True, default=None)
     accounting_company = models.ForeignKey("Company", null=True, blank=True)

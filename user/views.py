@@ -50,6 +50,14 @@ class AccountAPI(APIView):
                     company_id=data.get('company_id')
                 )
 
+                # if the user is a Client, test if it is the first one of that company
+                # to change ownership
+
+                if data.get('user_type') == Data.CLIENT:
+                    company = Company.objects.get(id=data.get('company_id'))
+                    if company.owner is None:
+                        company.owner = saved_user
+
                 return Response({'message': 'User created successfully', 'user': user.data, 'data': DataSerializer(userdata).data}, status.HTTP_201_CREATED)
             except Exception as e:
                 saved_user.delete()
@@ -145,6 +153,7 @@ class InviteClient(APIView):
                 "name": string,
                 "email": string,
                 "type": integer,
+                "company_name": string
             }
         :return: {message: string}
         """
@@ -155,7 +164,7 @@ class InviteClient(APIView):
             invited_to = data.get('invited_to', None)
 
             # If type == ACCOUNTANT, Company cannot be None
-            if data.get('type') == 1 and request.user.data.user_type == Data.ACCOUNTANT:
+            if data.get('type') == Data.ACCOUNTANT and request.user.data.user_type == Data.ACCOUNTANT:
                 invited_to = request.user.data.company_id
 
             # If the user inviting someone is a CLIENT, they can only invite people to their company
@@ -164,6 +173,13 @@ class InviteClient(APIView):
                 # If the inviting user is a CLIENT, ADMIN permission is required to invite someone to join
                 if request.user.data.access_level != Data.ADMIN:
                     return Response({'message': 'Wrong request.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            if request.user.data.user_type == Data.ACCOUNTANT and request.data.get('type') == 2:
+                invited_to = Company.objects.create(
+                    name=data.get('company_name'),
+                    is_accounting=False,
+                    accounting_company=request.user.data.company
+                ).id
 
             invite = Invite.objects.create(
                 email=data.get('email'),
