@@ -266,6 +266,9 @@ class ClientAppsAPI(APIView):
                 id__in=UserHasApp.objects.filter(user_id=user_id).values_list('id', flat=True)), many=True
             ).data
 
+            for c_app in client_apps:
+                c_app['order'] = UserHasApp.objects.get(user_id=user_id, app_id=c_app.get('id')).order
+
             return Response({'apps': client_apps}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': 'Error retrieving apps'}, status=status.HTTP_400_BAD_REQUEST)
@@ -288,10 +291,11 @@ class ClientAppsAPI(APIView):
             user_app = UserHasApp.objects.create(
                 user_id=user_id,
                 app_id=data.get('app_id'),
-                order=last_order+1 if last_order else 0
+                order=last_order+1 if last_order is not None else 0
             )
 
-            return Response({'message': 'App added successfully'}, status=status.HTTP_200_OK)
+            return Response({'message': 'App added successfully', 'order': user_app.order, 'user_app_id': user_app.id},
+                            status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': 'Error retrieving apps'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -314,6 +318,30 @@ class ClientAppsAPI(APIView):
             return Response({'message': 'App removed successfully'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': 'Error retrieving apps'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @is_accountant
+    def put(self, request, user_id):
+        """
+        Change client apps order
+        :param request:
+            {
+                "apps": array,
+            }
+        :return: {message: string}
+        """
+
+        data = json.loads(request.body)
+
+        try:
+            for app in data.get('apps', []):
+                user_app = UserHasApp.objects.get(id=app.get('user_app_id'))
+                if user_app.order != app.get('order'):
+                    user_app.order = app.get('order')
+                    user_app.save()
+
+            return Response({'message': 'App order updated successfully'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'message': 'Error updating apps order'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ClientInfoAPI(APIView):

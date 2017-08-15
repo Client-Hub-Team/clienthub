@@ -71,7 +71,18 @@ class AccountantClientSerializer(serializers.ModelSerializer):
 
     def get_apps(self, obj):
         apps = App.objects.filter(userhasapp__user=obj)
-        return AppSerializer(apps, many=True).data
+        serialized_apps = AppSerializer(apps, many=True).data
+
+        for app in serialized_apps:
+            user_has_app = UserHasApp.objects.get(user_id=obj.id, app_id=app.get('id'))
+            app['order'] = user_has_app.order
+            app['user_app_id'] = user_has_app.id
+
+
+        from operator import itemgetter
+        sorted_list = sorted(serialized_apps, key=itemgetter('order'))
+
+        return sorted_list
 
 
 class DataSerializer(serializers.ModelSerializer):
