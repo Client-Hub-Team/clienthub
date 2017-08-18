@@ -60,6 +60,9 @@ class AccountAPI(APIView):
                         company.owner = saved_user
                         company.save()
 
+                        userdata.access_level = Data.ADMIN
+                        userdata.save()
+
                 return Response({'message': 'User created successfully', 'user': user.data, 'data': DataSerializer(userdata).data}, status.HTTP_201_CREATED)
             except Exception as e:
                 saved_user.delete()
