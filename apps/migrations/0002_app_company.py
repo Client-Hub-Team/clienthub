@@ -7,6 +7,79 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
+    def create_global_apps(app, schema_editor):
+        from apps.models import App as app_cls
+
+        print "Creating global apps"
+        app_cls.objects.create(
+            name="QuickBooks",
+            category="Accounting",
+            url="https://qbo.intuit.com/qbo1/login",
+            logo="quickbooks.png"
+        )
+
+        app_cls.objects.create(
+            name="Xero",
+            category="Accounting",
+            url="https://login.xero.com/",
+            logo="xero.png"
+        )
+
+        app_cls.objects.create(
+            name="Bill.com",
+            category="A/P and A/R",
+            url="https://app.bill.com/Login",
+            logo="bill.com.png"
+        )
+
+        app_cls.objects.create(
+            name="Hubdoc",
+            category="Document Retrieval",
+            url="https://app.hubdoc.com/login",
+            logo="hubdoc.png"
+        )
+
+        app_cls.objects.create(
+            name="ReceiptBank",
+            category="Receipt Capture",
+            url="https://app.receipt-bank.com/login",
+            logo="receipt-bank.png"
+        )
+
+        app_cls.objects.create(
+            name="Gusto",
+            category="Payroll",
+            url="https://app.gusto.com/login",
+            logo="gusto.png"
+        )
+
+        app_cls.objects.create(
+            name="Expensify",
+            category="Expense Management",
+            url="https://www.expensify.com/signin",
+            logo="expensify.png"
+        )
+
+        app_cls.objects.create(
+            name="Tallie",
+            category="Expense Management",
+            url="https://usetallie.com/sso/Account/LogOn",
+            logo="tallie.png"
+        )
+
+        app_cls.objects.create(
+            name="TSheets",
+            category="Time Tracking",
+            url="https://www.tsheets.com/signin",
+            logo="tsheets.png"
+        )
+
+        app_cls.objects.create(
+            name="Mile IQ",
+            category="Mileage Tracking",
+            url="https://dashboard.mileiq.com/login/auth",
+            logo="mileiq.png"
+        )
 
     dependencies = [
         ('company', '0002_auto_20170818_0216'),
@@ -19,4 +92,5 @@ class Migration(migrations.Migration):
             name='company',
             field=models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to='company.Company'),
         ),
+        migrations.RunPython(create_global_apps),
     ]
