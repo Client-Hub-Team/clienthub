@@ -3,7 +3,7 @@ from company.serializers import CompanySerializer
 from company.models import Company
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from apps.models import App, UserHasApp
+from apps.models import App, UserHasApp, CompanyHasApp
 from apps.serializers import AppSerializer
 
 
@@ -60,7 +60,7 @@ class DataSimpleSerializer(serializers.ModelSerializer):
 class AccountantClientSerializer(serializers.ModelSerializer):
 
     data = serializers.SerializerMethodField()
-    apps = serializers.SerializerMethodField()
+    # apps = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -69,20 +69,20 @@ class AccountantClientSerializer(serializers.ModelSerializer):
         data = Data.objects.get(user=obj)
         return DataSimpleSerializer(data).data
 
-    def get_apps(self, obj):
-        apps = App.objects.filter(userhasapp__user=obj)
-        serialized_apps = AppSerializer(apps, many=True).data
-
-        for app in serialized_apps:
-            user_has_app = UserHasApp.objects.get(user_id=obj.id, app_id=app.get('id'))
-            app['order'] = user_has_app.order
-            app['user_app_id'] = user_has_app.id
-
-
-        from operator import itemgetter
-        sorted_list = sorted(serialized_apps, key=itemgetter('order'))
-
-        return sorted_list
+    # def get_apps(self, obj):
+    #     apps = App.objects.filter(userhasapp__user=obj)
+    #     serialized_apps = AppSerializer(apps, many=True).data
+    #
+    #     for app in serialized_apps:
+    #         user_has_app = UserHasApp.objects.get(user_id=obj.id, app_id=app.get('id'))
+    #         app['order'] = user_has_app.order
+    #         app['user_app_id'] = user_has_app.id
+    #
+    #
+    #     from operator import itemgetter
+    #     sorted_list = sorted(serialized_apps, key=itemgetter('order'))
+    #
+    #     return sorted_list
 
 
 class DataSerializer(serializers.ModelSerializer):
@@ -116,6 +116,49 @@ class InviteSerializer(serializers.ModelSerializer):
         if obj.invited_to is None:
             return None
         return CompanySerializer(obj.invited_to).data
+
+
+class AccountantClientCompanySerializer(serializers.ModelSerializer):
+
+    owner = serializers.SerializerMethodField()
+    apps = serializers.SerializerMethodField()
+    users = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Company
+
+    def get_owner(self, obj):
+        try:
+            owner = Data.objects.get(user=obj.owner)
+            return DataSerializer(owner).data.get('user')
+        except Exception as e:
+            return None
+
+    def get_apps(self, obj):
+        try:
+            apps = App.objects.filter(companyhasapp__company=obj)
+            serialized_apps = AppSerializer(apps, many=True).data
+
+            for app in serialized_apps:
+                company_has_app = CompanyHasApp.objects.get(company=obj, app_id=app.get('id'))
+                app['order'] = company_has_app.order
+                app['company_app_id'] = company_has_app.id
+
+            from operator import itemgetter
+            sorted_list = sorted(serialized_apps, key=itemgetter('order'))
+
+            return sorted_list
+        except Exception as e:
+            return []
+
+    def get_users(self, obj):
+        try:
+            users = Data.objects.filter(company=obj)
+            users_serialized = DataSerializer(users, many=True).data
+
+            return users_serialized
+        except Exception as e:
+            return []
 
 
 

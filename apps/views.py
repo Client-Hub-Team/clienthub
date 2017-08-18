@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework import status
-from models import App, UserHasApp
+from models import App, UserHasApp, CompanyHasApp
 from user.models import Data
 from serializers import AppSerializer
 import json
@@ -44,23 +44,23 @@ class AppsAPI(APIView):
     def get(self, request):
 
         """
-        Get all Apps
+        Get all Company Apps
         :return: {message: string, apps: AppSerializer}
         """
 
         try:
             all_apps = []
-            client_apps = []
+            company_apps = []
 
             if request.user.data.user_type == Data.ACCOUNTANT:
                 all_apps = AppSerializer(App.objects.all(), many=True).data
 
             if request.user.data.user_type == Data.CLIENT:
-                client_apps = AppSerializer(App.objects.filter(
-                    id__in=UserHasApp.objects.filter(user=request.user).values_list('app_id', flat=True)), many=True
+                company_apps = AppSerializer(App.objects.filter(
+                    id__in=CompanyHasApp.objects.filter(company=request.user.data.company).values_list('app_id', flat=True)), many=True
                 ).data
 
-            return Response({'all_apps': all_apps, 'client_apps': client_apps}, status=status.HTTP_200_OK)
+            return Response({'all_apps': all_apps, 'company_apps': company_apps}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': 'Error retrieving apps'}, status=status.HTTP_400_BAD_REQUEST)
 

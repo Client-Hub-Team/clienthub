@@ -27,7 +27,6 @@ class Data(models.Model):
     user_type = models.IntegerField(choices=USERTYPE_CHOICES, default=ACCOUNTANT, null=False)
     access_level = models.IntegerField(choices=ACCESSLEVEL_CHOICES, default=REGULAR, null=False)
     created = models.DateTimeField(auto_now=True)
-    # clients = models.ManyToManyField('Data', through='ClientManagement')
 
 
 class Invite(models.Model):
@@ -42,7 +41,7 @@ class Invite(models.Model):
 
 class ClientManagement(models.Model):
     accountant = models.ForeignKey(Data, related_name='accountant')
-    client = models.ForeignKey(Data, related_name='client')
+    company = models.ForeignKey(Company, related_name='managed_company')
     created = models.DateTimeField(auto_now=True)
 
 

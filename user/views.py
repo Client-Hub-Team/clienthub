@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework import status
-from serializers import UserSerializer, DataSerializer, InviteSerializer, AccountantClientSerializer
+from serializers import UserSerializer, DataSerializer, InviteSerializer, AccountantClientSerializer,\
+    AccountantClientCompanySerializer
 from models import Data, Invite, ClientManagement
 from company.models import Company
 from apps.serializers import AppSerializer
@@ -57,6 +58,7 @@ class AccountAPI(APIView):
                     company = Company.objects.get(id=data.get('company_id'))
                     if company.owner is None:
                         company.owner = saved_user
+                        company.save()
 
                 return Response({'message': 'User created successfully', 'user': user.data, 'data': DataSerializer(userdata).data}, status.HTTP_201_CREATED)
             except Exception as e:
@@ -233,20 +235,20 @@ class AccountantClientsAPI(APIView):
     def get(self, request):
         """
         Returns all accountant clients
-        :return: {DataSerializer}
+        :return: {AccountantClientSerializerSerializer}
         """
         if request.user.data.access_level == Data.ADMIN and request.user.data.user_type == Data.ACCOUNTANT:
-            clients = Data.objects.filter(
-                company__accounting_company=request.user.data.company,
-                user_type=Data.CLIENT
+            clients = Company.objects.filter(
+                accounting_company=request.user.data.company,
+                is_accounting=False
             )
         else:
-            clients = Data.objects.filter(
+            clients = Company.objects.filter(
                         id__in=ClientManagement.objects.filter(accountant=request.user.data)
-                            .values_list('client_id', flat=True),
-                        company__accounting_company=request.user.data.company, user_type=Data.CLIENT
+                            .values_list('company_id', flat=True),
+                        accounting_company=request.user.data.company, is_accounting=False
             )
-        return Response(DataSerializer(clients, many=True).data, status=status.HTTP_200_OK)
+        return Response(AccountantClientCompanySerializer(clients, many=True).data, status=status.HTTP_200_OK)
 
 
 
