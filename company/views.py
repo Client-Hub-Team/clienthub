@@ -6,7 +6,7 @@ from django.db.models import Max
 from rest_framework import status
 from user.serializers import DataSerializer
 from company.serializers import CompanySerializer
-from user.serializers import AccountantClientCompanySerializer
+from user.serializers import AccountantClientCompanySerializer, InviteSerializer
 from user.models import Data, ClientManagement, Invite
 from user.decorators import is_accountant
 from models import Company
@@ -122,6 +122,29 @@ class CompanyAccountantsAPI(APIView):
         """
         accountants = Data.objects.filter(company_id=company_id, user_type=Data.ACCOUNTANT)
         return Response(DataSerializer(accountants).data, status=status.HTTP_200_OK)
+
+
+class CompanyPendingInvitesAPI(APIView):
+    @is_accountant
+    def get(self, request, company_id):
+
+        """
+        Get company invites for accountant view
+        :return: {message: string, company: CompanySerializer}
+        """
+
+        try:
+            invites = Invite.objects.filter(
+                invited_to=company_id,
+                accepted=False,
+                invited_to__accounting_company=request.user.data.company
+            )
+
+            invites_serialized = InviteSerializer(invites).data
+
+            return Response({'invites': invites_serialized}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'message': 'Error retrieving apps'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CompanyInfoAPI(APIView):

@@ -36,6 +36,7 @@ class Invite(models.Model):
     email = models.CharField(max_length=250, null=True, blank=True)
     created = models.DateTimeField(auto_now=True)
     invited_to = models.ForeignKey(Company, null=True)
+    accepted = models.BooleanField(default=False)
     type = models.IntegerField(choices=Data.USERTYPE_CHOICES, default=Data.ACCOUNTANT, null=False)
 
 

@@ -32,7 +32,8 @@ class AccountAPI(APIView):
                 "email": "string",
                 "user_type": integer,
                 "access_level": integer,
-                "company_id": integer
+                "company_id": integer,
+                "invite_id": integer
             }
         :return: {message: string, user: UserSerializer, data: DataSerializer}
         """
@@ -62,6 +63,11 @@ class AccountAPI(APIView):
 
                         userdata.access_level = Data.ADMIN
                         userdata.save()
+
+                if data.get('invite_id', None):
+                    invite = Invite.objects.get(id=data.get('invite_id'))
+                    invite.accepted = True
+                    invite.save()
 
                 return Response({'message': 'User created successfully', 'user': user.data, 'data': DataSerializer(userdata).data}, status.HTTP_201_CREATED)
             except Exception as e:
@@ -111,11 +117,11 @@ class AddClientToAccountant(APIView):
     def post(self, request):
 
         """
-        Adds an existing client to a accountant
+        Adds an existing client company to a accountant
         :param request:
             {
                 "accountant_id": integer,
-                "client_id": integer
+                "company_id": integer
             }
         :return: {message: string}
         """
@@ -124,16 +130,14 @@ class AddClientToAccountant(APIView):
 
         try:
             data_accountant = Data.objects.get(user_id=data.get('accountant_id'))
-            data_client = Data.objects.get(user_id=data.get('client_id'))
+            company_client = Company.objects.get(id=data.get('company_id'))
 
-            if data_client.user_type == Data.CLIENT and \
+            if company_client.is_accounting == False and \
                data_accountant.user_type == Data.ACCOUNTANT and \
                request.user.data.access_level == Data.ADMIN:
-                management = ClientManagement.objects.create(accountant=data_accountant, client=data_client)
+                management = ClientManagement.objects.create(accountant=data_accountant, company=company_client)
             else:
                 errors = []
-                if data_client.user_type != Data.CLIENT:
-                    errors.append('Client is not CLIENT')
                 if data_accountant.user_type != Data.ACCOUNTANT:
                     errors.append('Accountant is not ACCOUNTANT')
                 if request.user.data.access_level != Data.ADMIN:
@@ -141,7 +145,7 @@ class AddClientToAccountant(APIView):
 
                 return Response({'message': 'Cannot add client to Accountant', 'errors': errors}, status.HTTP_400_BAD_REQUEST)
 
-            return Response({'message': 'Accountant is now managing user'}, status.HTTP_200_OK)
+            return Response({'message': 'Accountant is now managing company'}, status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': 'Accountant couldnt manage user'}, status.HTTP_400_BAD_REQUEST)
 

@@ -1,4 +1,4 @@
-from models import Data, Invite
+from models import Data, Invite, ClientManagement
 from company.serializers import CompanySerializer
 from company.models import Company
 from rest_framework import serializers
@@ -123,6 +123,8 @@ class AccountantClientCompanySerializer(serializers.ModelSerializer):
     owner = serializers.SerializerMethodField()
     apps = serializers.SerializerMethodField()
     users = serializers.SerializerMethodField()
+    pending_invites = serializers.SerializerMethodField()
+    accountants = serializers.SerializerMethodField()
 
     class Meta:
         model = Company
@@ -159,6 +161,31 @@ class AccountantClientCompanySerializer(serializers.ModelSerializer):
             return users_serialized
         except Exception as e:
             return []
+
+    def get_pending_invites(self, obj):
+        try:
+            invites = Invite.objects.filter(
+                invited_to=obj,
+                accepted=False
+            )
+
+            return InviteSerializer(invites).data
+        except Exception as e:
+            return []
+
+
+    def get_accountants(self, obj):
+        try:
+            accountants = Data.objects.filter(
+                        id__in=ClientManagement.objects.filter(company=obj)
+                            .values_list('accountant_id', flat=True))
+
+            return DataSerializer(accountants, many=True).data
+        except Exception as e:
+            return []
+
+
+
 
 
 
