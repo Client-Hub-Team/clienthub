@@ -15,6 +15,9 @@ class App(models.Model):
 
 class CompanyHasApp(models.Model):
 
+    class Meta:
+        ordering = ['order']
+
     app = models.ForeignKey(App)
     company = models.ForeignKey(Company)
     created = models.DateTimeField(auto_now=True)

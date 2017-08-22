@@ -184,11 +184,12 @@ class InviteClient(APIView):
                     return Response({'message': 'Wrong request.'}, status=status.HTTP_400_BAD_REQUEST)
 
             if request.user.data.user_type == Data.ACCOUNTANT and request.data.get('type') == 2:
-                invited_to = Company.objects.create(
-                    name=data.get('company_name'),
-                    is_accounting=False,
-                    accounting_company=request.user.data.company
-                ).id
+                if invited_to is None:
+                    invited_to = Company.objects.create(
+                        name=data.get('company_name'),
+                        is_accounting=False,
+                        accounting_company=request.user.data.company
+                    ).id
 
             invite = Invite.objects.create(
                 email=data.get('email'),

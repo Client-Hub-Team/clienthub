@@ -61,6 +61,37 @@ class CompanyAPI(APIView):
         except Exception:
             return Response({'message': 'Error adding new Company'}, status=status.HTTP_400_BAD_REQUEST)
 
+
+    def patch(self, request):
+
+        """
+        Update a Company
+        :param request:
+            {
+                "name": "string",
+                "url": "string",
+                "logo": "string",
+                "twitter": "string",
+            }
+        :return: {message: string, Company: CompanySerializer}
+        """
+        data = json.loads(request.body)
+
+        try:
+            company = request.user.data.company
+            company.name = data.get('name', '')
+            company.twitter = data.get('twitter', '')
+            company.facebook = data.get('facebook', '')
+            company.linkedin = data.get('linkedin', '')
+            company.url = data.get('url', '')
+
+            company.save()
+
+            return Response(CompanySerializer(company).data,
+                            status=status.HTTP_200_OK)
+        except Exception:
+            return Response({'message': 'Error updating Company info'}, status=status.HTTP_400_BAD_REQUEST)
+
     def get(self, request):
         """
         Returns company info

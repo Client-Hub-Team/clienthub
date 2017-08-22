@@ -10,7 +10,6 @@ class CompanySerializer(serializers.ModelSerializer):
     accounting_company = serializers.SerializerMethodField()
     apps = serializers.SerializerMethodField()
 
-
     class Meta:
         model = Company
 

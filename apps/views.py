@@ -57,8 +57,17 @@ class AppsAPI(APIView):
 
             if request.user.data.user_type == Data.CLIENT:
                 company_apps = AppSerializer(App.objects.filter(
-                    id__in=CompanyHasApp.objects.filter(company=request.user.data.company).values_list('app_id', flat=True)), many=True
+                    id__in=CompanyHasApp.objects.filter(company=request.user.data.company)
+                        .values_list('app_id', flat=True)), many=True
                 ).data
+
+                for app in company_apps:
+                    company_has_app = CompanyHasApp.objects.get(company=request.user.data.company, app_id=app.get('id'))
+                    app['order'] = company_has_app.order
+                    app['user_app_id'] = company_has_app.id
+
+                from operator import itemgetter
+                company_apps = sorted(company_apps, key=itemgetter('order'))
 
             return Response({'all_apps': all_apps, 'company_apps': company_apps}, status=status.HTTP_200_OK)
         except Exception as e:
