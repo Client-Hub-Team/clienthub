@@ -2,8 +2,6 @@ from rest_framework import serializers
 from models import Company
 from apps.serializers import AppSerializer
 from apps.models import CompanyHasApp, App
-from user.models import Data
-from django.contrib.auth.models import User
 
 class CompanySerializer(serializers.ModelSerializer):
 

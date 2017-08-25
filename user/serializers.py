@@ -169,7 +169,7 @@ class AccountantClientCompanySerializer(serializers.ModelSerializer):
                 accepted=False
             )
 
-            return InviteSerializer(invites).data
+            return InviteSerializer(invites, many=True).data
         except Exception as e:
             return []
 

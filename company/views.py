@@ -83,6 +83,7 @@ class CompanyAPI(APIView):
             company.twitter = data.get('twitter', '')
             company.facebook = data.get('facebook', '')
             company.linkedin = data.get('linkedin', '')
+            company.color = data.get('color', '')
             company.url = data.get('url', '')
 
             company.save()
