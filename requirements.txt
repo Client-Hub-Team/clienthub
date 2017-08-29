@@ -1,4 +1,4 @@
-APScheduler==3.1.0
+cloudinary==1.8.0
 Django==1.9.5
 django-cors-headers==1.1.0
 djangorestframework==3.3.3
@@ -7,7 +7,11 @@ funcsigs==1.0.2
 futures==3.0.5
 MySQL-python==1.2.5
 PyJWT==1.4.0
+Pillow==4.2.1
 python-dateutil==2.5.3
+python-thumbnails==0.5.1
+requests==2.6.0
+sendgrid==4.2.0
 pytz==2016.4
 requests==2.10.0
 six==1.10.0
