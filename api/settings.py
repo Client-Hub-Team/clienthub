@@ -137,7 +137,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'cloud_client_hub',
         'USER': 'root',
-        'PASSWORD': 'root',
+        'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '3306',
         'CONN_MAX_AGE': 3600, # keep database connections open for an hour
@@ -181,3 +181,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/uploads/'
+
+SENDGRID_API_KEY = ''
