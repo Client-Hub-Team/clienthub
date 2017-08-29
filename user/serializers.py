@@ -1,5 +1,4 @@
 from models import Data, Invite, ClientManagement
-from company.serializers import CompanySerializer
 from company.models import Company
 from rest_framework import serializers
 from django.contrib.auth.models import User
@@ -85,6 +84,53 @@ class AccountantClientSerializer(serializers.ModelSerializer):
     #     return sorted_list
 
 
+# Serializer used to return company info in the practice-info screen
+class CompanySerializer(serializers.ModelSerializer):
+
+    accounting_company = serializers.SerializerMethodField()
+    apps = serializers.SerializerMethodField()
+    accountants = serializers.SerializerMethodField()
+    pending_accountants = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Company
+
+    def get_accounting_company(self, obj):
+        if obj.accounting_company:
+            return CompanySerializer(obj.accounting_company).data
+        return None
+
+    def get_apps(self, obj):
+        apps = App.objects.filter(companyhasapp__company=obj)
+        serialized_apps = AppSerializer(apps, many=True).data
+
+        for app in serialized_apps:
+            company_has_app = CompanyHasApp.objects.get(company=obj, app_id=app.get('id'))
+            app['order'] = company_has_app.order
+            app['user_app_id'] = company_has_app.id
+
+        from operator import itemgetter
+        sorted_list = sorted(serialized_apps, key=itemgetter('order'))
+
+        return sorted_list
+
+    def get_accountants(self, obj):
+        if obj.is_accounting:
+            accountants = Data.objects.filter(
+                company=obj,
+                user_type=Data.ACCOUNTANT
+            )
+            return DataSerializer(accountants, many=True).data
+        return []
+
+    def get_pending_accountants(self, obj):
+        if obj.is_accounting:
+            pending = Invite.objects.filter(invited_to=obj, accepted=False, type=Data.ACCOUNTANT).values('name', 'email')
+            return pending
+        return []
+
+
+
 class DataSerializer(serializers.ModelSerializer):
 
     user = serializers.SerializerMethodField()
@@ -102,6 +148,7 @@ class DataSerializer(serializers.ModelSerializer):
         return None
 
 
+# Serializer used to managed invites
 class InviteSerializer(serializers.ModelSerializer):
     invited_by = serializers.SerializerMethodField()
     invited_to = serializers.SerializerMethodField()
@@ -183,6 +230,9 @@ class AccountantClientCompanySerializer(serializers.ModelSerializer):
             return DataSerializer(accountants, many=True).data
         except Exception as e:
             return []
+
+
+
 
 
 

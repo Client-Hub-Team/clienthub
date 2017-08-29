@@ -17,11 +17,15 @@ from django.conf.urls import url, include
 from user import urls as user_urls
 from company import urls as company_urls
 from apps import urls as app_urls
+from resources import urls as resources_urls
 from rest_framework_jwt.views import obtain_jwt_token
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     url(r'^api-token-auth/', obtain_jwt_token),
     url(r'^user/', include(user_urls)),
     url(r'^company/', include(company_urls)),
     url(r'^apps/', include(app_urls)),
-]
+    url(r'^resources/', include(resources_urls)),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

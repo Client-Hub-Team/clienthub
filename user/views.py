@@ -109,7 +109,6 @@ class JoinCompany(APIView):
             return Response({'message': 'Account couldnt join company'})
 
 
-
 class AddClientToAccountant(APIView):
 
 
@@ -259,8 +258,6 @@ class AccountantClientsAPI(APIView):
         return Response(AccountantClientCompanySerializer(clients, many=True).data, status=status.HTTP_200_OK)
 
 
-
-
 class ClientAppsAPI(APIView):
 
     @is_accountant
@@ -352,6 +349,80 @@ class ClientAppsAPI(APIView):
             return Response({'message': 'App order updated successfully'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': 'Error updating apps order'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# class ClientResourcesAPI(APIView):
+#
+#
+#     @is_accountant
+#     def post(self, request, user_id):
+#         """
+#         Add an Resource to a Client
+#         :param request:
+#             {
+#                 "app_id": integer,
+#             }
+#         :return: {invites: []}
+#         """
+#
+#         data = json.loads(request.body)
+#
+#         try:
+#             last_order = UserHasApp.objects.filter(user_id=user_id).aggregate(Max('order')).get('order__max')
+#             user_app = UserHasApp.objects.create(
+#                 user_id=user_id,
+#                 app_id=data.get('app_id'),
+#                 order=last_order+1 if last_order is not None else 0
+#             )
+#
+#             return Response({'message': 'App added successfully', 'order': user_app.order, 'user_app_id': user_app.id},
+#                             status=status.HTTP_200_OK)
+#         except Exception as e:
+#             return Response({'message': 'Error retrieving apps'}, status=status.HTTP_400_BAD_REQUEST)
+#
+#     @is_accountant
+#     def patch(self, request, user_id):
+#         """
+#         Remove an App of a Client
+#         :param request:
+#             {
+#                 "app_id": integer,
+#             }
+#         :return: {invites: []}
+#         """
+#
+#         data = json.loads(request.body)
+#
+#         try:
+#             user_app = UserHasApp.objects.get(user_id=user_id, app_id=data.get('app_id'))
+#             user_app.delete()
+#             return Response({'message': 'App removed successfully'}, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             return Response({'message': 'Error retrieving apps'}, status=status.HTTP_400_BAD_REQUEST)
+#
+#     @is_accountant
+#     def put(self, request, user_id):
+#         """
+#         Change client apps order
+#         :param request:
+#             {
+#                 "apps": array,
+#             }
+#         :return: {message: string}
+#         """
+#
+#         data = json.loads(request.body)
+#
+#         try:
+#             for app in data.get('apps', []):
+#                 user_app = UserHasApp.objects.get(id=app.get('user_app_id'))
+#                 if user_app.order != app.get('order'):
+#                     user_app.order = app.get('order')
+#                     user_app.save()
+#
+#             return Response({'message': 'App order updated successfully'}, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             return Response({'message': 'Error updating apps order'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ClientInfoAPI(APIView):

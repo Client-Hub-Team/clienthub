@@ -1,12 +1,16 @@
 from rest_framework import serializers
 from models import Company
 from apps.serializers import AppSerializer
+from user.models import Data
 from apps.models import CompanyHasApp, App
+
+
 
 class CompanySerializer(serializers.ModelSerializer):
 
     accounting_company = serializers.SerializerMethodField()
     apps = serializers.SerializerMethodField()
+    accountants = serializers.SerializerMethodField()
 
     class Meta:
         model = Company

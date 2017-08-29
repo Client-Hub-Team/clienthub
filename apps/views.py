@@ -53,7 +53,7 @@ class AppsAPI(APIView):
             company_apps = []
 
             if request.user.data.user_type == Data.ACCOUNTANT:
-                all_apps = AppSerializer(App.objects.all(), many=True).data
+                all_apps = AppSerializer(App.objects.filter(company=None), many=True).data
 
             if request.user.data.user_type == Data.CLIENT:
                 company_apps = AppSerializer(App.objects.filter(

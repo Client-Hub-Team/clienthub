@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 import datetime
+import cloudinary
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -42,6 +44,7 @@ INSTALLED_APPS = [
     'user',
     'company',
     'apps',
+    'resources',
     'gunicorn',
 ]
 
@@ -100,6 +103,8 @@ JWT_AUTH = {
     'JWT_AUTH_HEADER_PREFIX': 'JWT',
 }
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
+MEDIA_URL = "/media/"
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -175,5 +180,4 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
-STATIC_URL = '/static/'
-SENDGRID_API_KEY = ''
+STATIC_URL = '/uploads/'
