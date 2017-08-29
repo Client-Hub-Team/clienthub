@@ -1,7 +1,6 @@
-from serializers import UserSerializer, DataSerializer
+from serializers import UserSerializer, DataSerializer, CompanySerializer
 from models import Data
 from company.models import Company
-from company.serializers import CompanySerializer
 
 def jwt_response_payload_handler(token, user=None, request=None):
     try:

@@ -13,7 +13,6 @@ python-thumbnails==0.5.1
 requests==2.6.0
 sendgrid==4.2.0
 pytz==2016.4
-requests==2.10.0
 six==1.10.0
 tzlocal==1.2.2
 wheel==0.24.0

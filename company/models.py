@@ -14,4 +14,4 @@ class Company(models.Model):
     is_accounting = models.BooleanField(default=False)
     owner = models.ForeignKey(User, null=True, blank=True, default=None)
     accounting_company = models.ForeignKey("Company", null=True, blank=True)
-    color = models.CharField(max_length=20, null=True, blank=True)
+    color = models.CharField(max_length=20, null=True, blank=True, default="#FFF")
