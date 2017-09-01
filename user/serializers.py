@@ -3,7 +3,9 @@ from company.models import Company
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from apps.models import App, UserHasApp, CompanyHasApp
+from resources.models import Resource, UserHasResource, CompanyHasResource
 from apps.serializers import AppSerializer
+from resources.serializers import ResourceSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -89,6 +91,7 @@ class CompanySerializer(serializers.ModelSerializer):
 
     accounting_company = serializers.SerializerMethodField()
     apps = serializers.SerializerMethodField()
+    # resources = serializers.SerializerMethodField()
     accountants = serializers.SerializerMethodField()
     pending_accountants = serializers.SerializerMethodField()
 
@@ -113,6 +116,8 @@ class CompanySerializer(serializers.ModelSerializer):
         sorted_list = sorted(serialized_apps, key=itemgetter('order'))
 
         return sorted_list
+
+
 
     def get_accountants(self, obj):
         if obj.is_accounting:
@@ -169,6 +174,7 @@ class AccountantClientCompanySerializer(serializers.ModelSerializer):
 
     owner = serializers.SerializerMethodField()
     apps = serializers.SerializerMethodField()
+    resources = serializers.SerializerMethodField()
     users = serializers.SerializerMethodField()
     pending_invites = serializers.SerializerMethodField()
     accountants = serializers.SerializerMethodField()
@@ -195,6 +201,23 @@ class AccountantClientCompanySerializer(serializers.ModelSerializer):
 
             from operator import itemgetter
             sorted_list = sorted(serialized_apps, key=itemgetter('order'))
+
+            return sorted_list
+        except Exception as e:
+            return []
+
+    def get_resources(self, obj):
+        try:
+            resources = Resource.objects.filter(companyhasresource__company=obj)
+            serialized_resources = ResourceSerializer(resources, many=True).data
+
+            for resource in serialized_resources:
+                company_has_resource = CompanyHasResource.objects.get(company=obj, resource_id=resource.get('id'))
+                resource['order'] = company_has_resource.order
+                resource['company_resource_id'] = company_has_resource.id
+
+            from operator import itemgetter
+            sorted_list = sorted(serialized_resources, key=itemgetter('order'))
 
             return sorted_list
         except Exception as e:

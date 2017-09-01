@@ -8,5 +8,6 @@ urlpatterns = [
     url(r'^(?P<company_id>[^/]+)$', CompanyInfoAPI.as_view()),
     url(r'^(?P<company_id>[^/]+)/clients$', CompanyClientsAPI.as_view()),
     url(r'^(?P<company_id>[^/]+)/apps$', CompanyAppsAPI.as_view()),
+    url(r'^(?P<company_id>[^/]+)/resources$', CompanyResourcesAPI.as_view()),
     url(r'^', CompanyAPI.as_view()),
 ]
