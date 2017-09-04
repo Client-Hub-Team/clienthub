@@ -1,5 +1,7 @@
 cloudinary==1.8.0
 Django==1.9.5
+awscli==1.11.145
+boto3==1.4.7
 django-cors-headers==1.1.0
 djangorestframework==3.3.3
 djangorestframework-jwt==1.8.0
