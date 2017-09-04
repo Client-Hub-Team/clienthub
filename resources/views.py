@@ -13,7 +13,9 @@ import cloudinary.uploader
 import cloudinary.api
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from user.upload_helper import Upload_Helper
 import json
+import boto3
 import os
 
 
@@ -40,40 +42,21 @@ class ResourcesAPI(APIView):
         try:
 
             if (file):
-                destination = os.path.join(BASE_DIR, 'uploads')
-                if not os.path.isdir(destination):
-                    os.mkdir(destination)
-
-                content = ContentFile(file.read())
-                filename = file.name
-                path = default_storage.save('{0}'.format(filename), content)
-
-                try:
-                    im = Image.open('uploads/{0}'.format(path))
-                    im.thumbnail((250,50))
-                    im.save('uploads/thumb_{0}'.format(file.name), im.format)
-                    upload_result = cloudinary.uploader.upload('uploads/thumb_{0}'.format(file.name))
-                    filename = upload_result.get('url')
-                    default_storage.delete(file.name)
-                    default_storage.delete('thumb_{0}'.format(file.name))
-                except IOError:
-                    print("cannot create thumbnail for {0}".format(file.name))
-
+                url = Upload_Helper.upload_s3(file=file, file_type=data.get('file_type'))
             else:
-
-                filename = data.get('url')
+                url = data.get('url')
 
             resource = Resource.objects.create(
                 name=data.get('name', ''),
                 category=data.get('category'),
                 file_type=data.get('file_type'),
                 description=data.get('description'),
-                url=filename,
+                url=url,
                 company_id=data.get('company_id', None)
             )
 
             return Response({'resource': ResourceSerializer(resource).data}, status=status.HTTP_201_CREATED)
-        except Exception:
+        except Exception as e:
             return Response({'message': 'Error adding new App'}, status=status.HTTP_400_BAD_REQUEST)
 
 
