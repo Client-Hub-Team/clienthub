@@ -6,15 +6,17 @@ from django.contrib.auth.models import User
 
 class Resource(models.Model):
     DOCUMENT_TEXT = 1
-    DOCUMENT_SPREADSHEET = 2
+    DOCUMENT_URL = 2
     VIDEO = 3
     IMAGE = 4
+    OTHER = 5
 
     FILE_TYPE_CHOICES = (
         (DOCUMENT_TEXT, 'Document'),
-        (DOCUMENT_SPREADSHEET, 'Spreadsheet'),
+        (DOCUMENT_URL, 'Spreadsheet'),
         (VIDEO, 'Video'),
-        (IMAGE, 'Image')
+        (IMAGE, 'Image'),
+        (OTHER, 'Other')
     )
 
     name = models.CharField(max_length=250, null=False, blank=False)

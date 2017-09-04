@@ -61,7 +61,6 @@ class DataSimpleSerializer(serializers.ModelSerializer):
 class AccountantClientSerializer(serializers.ModelSerializer):
 
     data = serializers.SerializerMethodField()
-    # apps = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -69,21 +68,6 @@ class AccountantClientSerializer(serializers.ModelSerializer):
     def get_data(self, obj):
         data = Data.objects.get(user=obj)
         return DataSimpleSerializer(data).data
-
-    # def get_apps(self, obj):
-    #     apps = App.objects.filter(userhasapp__user=obj)
-    #     serialized_apps = AppSerializer(apps, many=True).data
-    #
-    #     for app in serialized_apps:
-    #         user_has_app = UserHasApp.objects.get(user_id=obj.id, app_id=app.get('id'))
-    #         app['order'] = user_has_app.order
-    #         app['user_app_id'] = user_has_app.id
-    #
-    #
-    #     from operator import itemgetter
-    #     sorted_list = sorted(serialized_apps, key=itemgetter('order'))
-    #
-    #     return sorted_list
 
 
 # Serializer used to return company info in the practice-info screen
@@ -170,6 +154,7 @@ class InviteSerializer(serializers.ModelSerializer):
         return CompanySerializer(obj.invited_to).data
 
 
+# Serializer for Accountants loading a client company by clicking on it in the client list
 class AccountantClientCompanySerializer(serializers.ModelSerializer):
 
     owner = serializers.SerializerMethodField()
