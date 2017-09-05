@@ -42,7 +42,7 @@ class ResourcesAPI(APIView):
         try:
 
             if (file):
-                url = Upload_Helper.upload_s3(file=file, file_type=data.get('file_type'))
+                url = Upload_Helper.upload_s3(file=file, file_type=data.get('file_type'), thumb=False)
             else:
                 url = data.get('url')
 

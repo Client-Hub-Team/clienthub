@@ -48,7 +48,7 @@ class AccountAPI(APIView):
                 userdata = Data.objects.create(
                     user=saved_user,
                     user_type=data.get('user_type'),
-                    access_level=data.get('access_level'),
+                    access_level=1,
                     company_id=data.get('company_id')
                 )
 
@@ -206,7 +206,10 @@ class InviteClient(APIView):
             #     message_from='welcome@clienthub.com'
             # )
 
-            return Response({'message': 'User invited successfully'}, status=status.HTTP_200_OK)
+            return Response({
+                'message': 'User invited successfully',
+                'invite': InviteSerializer(invite).data
+            }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': 'Invite not sent'}, status=status.HTTP_400_BAD_REQUEST)
 

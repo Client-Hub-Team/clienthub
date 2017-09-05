@@ -7,6 +7,7 @@ from django.core.files.base import ContentFile
 from PIL import Image
 import string
 import random
+import math
 #
 # logger = logging.getLogger('clienthub')
 
@@ -16,7 +17,7 @@ class Upload_Helper(object):
     BUCKET_NAME = 'cloudclienthub-test'
 
     @classmethod
-    def upload_s3(cls, file, file_type):
+    def upload_s3(cls, file, file_type, thumb=True):
         if (file):
             s3 = boto3.resource('s3')
             destination = os.path.join(BASE_DIR, 'uploads')
@@ -34,9 +35,18 @@ class Upload_Helper(object):
                 # Resize image if needed
                 if int(file_type == 4):
                     im = Image.open('uploads/{0}'.format(path))
-                    im.thumbnail((250, 50))
-                    im.save('uploads/thumb_{0}'.format(file.name), im.format)
-                    filename = 'thumb_{0}'.format(file.name)
+                    if thumb:
+                        width = im.width
+                        height = im.height
+                        max_height = 90
+                        divisor = height / max_height
+                        newwidth = math.floor( width / divisor )
+                        im.thumbnail((newwidth, 90))
+                        im.save('uploads/thumb_{0}'.format(file.name), im.format)
+                        filename = 'thumb_{0}'.format(file.name)
+                    else:
+                        im.save('uploads/{0}'.format(file.name), im.format)
+                        filename = '{0}'.format(file.name)
                 else:
                     filename = '{0}'.format(file.name)
 
