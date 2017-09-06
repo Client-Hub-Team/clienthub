@@ -68,15 +68,16 @@ class ResourcesAPI(APIView):
         """
 
         try:
-            all_resources = []
+            global_resources = []
             company_resources = []
-            accounting_resources = []
+            practice_resources = []
 
             if request.user.data.user_type == Data.ACCOUNTANT:
-                all_resources = ResourceSerializer(Resource.objects.filter(company=None), many=True).data
-                all_resources += ResourceSerializer(
+                global_resources = ResourceSerializer(Resource.objects.filter(company=None), many=True).data
+                practice_resources = ResourceSerializer(
                     Resource.objects.filter(company=request.user.data.company), many=True
                 ).data
+                # all_resources += all_resources + accounting_resources
 
             if request.user.data.user_type == Data.CLIENT:
                 company_resources = ResourceSerializer(Resource.objects.filter(
@@ -97,9 +98,9 @@ class ResourcesAPI(APIView):
 
             return Response(
                 {
-                    'all_resources': all_resources,
+                    'global_resources': global_resources,
                     'company_resources': company_resources,
-                    'accounting_resources': accounting_resources
+                    'practice_resources': practice_resources
                 }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': 'Error retrieving resources'}, status=status.HTTP_400_BAD_REQUEST)
